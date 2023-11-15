@@ -6,37 +6,92 @@ class Vampire {
     this.creator = null;
   }
 
-  /** Simple tree methods **/
-
-  // Adds the vampire as an offspring of this vampire
+  /** Adds the vampire as an offspring of this vampire  */
   addOffspring(vampire) {
-
+    vampire.creator = this;
+    this.offspring.push(vampire);
   }
 
-  // Returns the total number of vampires created by that vampire
+  /** Returns the total number of vampires created by that vampire */
   get numberOfOffspring() {
-
+    return this.offspring.length
   }
 
-  // Returns the number of vampires away from the original vampire this vampire is
+  /**  Returns the number of vampires away from the original vampire this vampire is */
   get numberOfVampiresFromOriginal() {
-
+    let distance = 0;
+    let parent = this.creator;
+    while (parent != null) {
+      distance += 1;
+      parent = parent.creator;
+    }
+    return distance;
   }
 
-  // Returns true if this vampire is more senior than the other vampire. (Who is closer to the original vampire)
+  /** Returns true if this vampire is more senior than the other vampire. (Who is closer to the original vampire) */
   isMoreSeniorThan(vampire) {
-
+    return this.numberOfVampiresFromOriginal < vampire.numberOfVampiresFromOriginal;
   }
 
-  /** Stretch **/
 
-  // Returns the closest common ancestor of two vampires.
-  // The closest common anscestor should be the more senior vampire if a direct ancestor is used.
-  // For example:
-  // * when comparing Ansel and Sarah, Ansel is the closest common anscestor.
-  // * when comparing Ansel and Andrew, Ansel is the closest common anscestor.
+  /** Returns the closest common ancestor of two vampires.
+     The closest common anscestor should be the more senior vampire if a direct ancestor is used.
+     For example:
+     * when comparing Ansel and Sarah, Ansel is the closest common anscestor.
+     * when comparing Ansel and Andrew, Ansel is the closest common anscestor.
+  */
   closestCommonAncestor(vampire) {
+    // bases cases - where we can determine the answer
+    if (this.creator == null) {
+      return this;
+    } else if (vampire.creator == null) {
+      return vampire;
+    } else if(this.name == vampire.name) {
+      return this;
+    }
 
+    // recursion cases - move up who isnt the most senior
+    if (this.isMoreSeniorThan(vampire)) {
+      return this.closestCommonAncestor(vampire.creator);
+    } else {
+      return this.creator.closestCommonAncestor(vampire);
+    }
+  }
+
+
+  /** Returns the vampire object with that name, or null if no vampire exists with that name */
+  vampireWithName(name) {
+    if(this.name == name) {
+      return this;
+    }
+    for(let child of this.offspring) {
+      let match = child.vampireWithName(name);
+      if (match) {
+        return match
+      }
+    }
+    return null;
+  }
+
+  /** Returns the total number of vampires that exist */
+  get totalDescendents() {
+    let sum = 0;
+    for(let child of this.offspring) {
+      sum += child.totalDescendents + 1;
+    }
+    return sum;
+  }
+
+  /** Returns an array of all the vampires that were converted after 1980 */
+  get allMillennialVampires() {
+    let collection = [];
+    if (this.yearConverted > 1980) {
+      collection.push(this);
+    }
+    for(let child of this.offspring) {
+      collection = [...collection, ...child.allMillennialVampires];
+    }
+    return collection;
   }
 }
 
